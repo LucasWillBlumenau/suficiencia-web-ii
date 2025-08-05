@@ -8,6 +8,7 @@ namespace ProvaSuficiencia.Controller;
 public class PingController : ControllerBase
 {
 
+    [HttpGet]
     public IActionResult Ping()
     {
         return Ok("pong");
