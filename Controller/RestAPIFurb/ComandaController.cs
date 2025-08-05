@@ -118,14 +118,15 @@ public class ComandaController(AppDbContext context) : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteComanda(int id)
     {
-        var comanda = await context.Comandas.Include(c => c.Produtos)
-                                            .FirstOrDefaultAsync(c => c.Id == id);
+        var comanda = context.Comandas.FirstOrDefault(c => c.Id == id);
+
         if (comanda is null)
         {
             return NotFound();
         }
 
-        context.Comandas.Remove(comanda);
+        await context.Database.ExecuteSqlRawAsync("DELETE FROM Produtos WHERE ComandaId = {0}", id);
+        await context.Database.ExecuteSqlRawAsync("DELETE FROM Comandas WHERE Id = {0}", id);
         await context.SaveChangesAsync();
 
         return Ok(new { success = new { text = "comanda removida" } });
