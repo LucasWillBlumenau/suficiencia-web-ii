@@ -55,7 +55,6 @@ public class ComandaController(AppDbContext context) : ControllerBase
     [HttpPost]
     public async Task<ActionResult<PostComandaResponseDto>> PostComanda([FromBody] PostComandaDto postComandaDto)
     {
-
         var comanda = new Comanda
         {
             IdUsuario = postComandaDto.IdUsuario,
@@ -69,7 +68,13 @@ public class ComandaController(AppDbContext context) : ControllerBase
             })],
         };
 
-        context.Add(comanda);
+        var erro = ValidadorComanda.Validar(comanda);
+        if (erro is not null)
+        {
+            return BadRequest(erro);
+        }
+
+        await context.Comandas.AddAsync(comanda);
         await context.SaveChangesAsync();
         return StatusCode((int)HttpStatusCode.Created, new PostComandaResponseDto
         {
@@ -100,14 +105,31 @@ public class ComandaController(AppDbContext context) : ControllerBase
         comanda.TelefoneUsuario = putComandaDto.TelefoneUsuario ?? comanda.TelefoneUsuario;
         if (putComandaDto.Produtos is not null)
         {
-            await context.Database.ExecuteSqlRawAsync("DELETE FROM Produtos WHERE ComandaId = {0}", comanda.Id);
-            await context.Produtos.AddRangeAsync(putComandaDto.Produtos.Select(p => new Produto
+
+            comanda.Produtos = [.. putComandaDto.Produtos.Select(p => new Produto
             {
                 Id = p.Id,
                 Nome = p.Nome,
                 Preco = p.Preco,
                 Comanda = comanda,
-            }));
+            })];
+
+            var erro = ValidadorComanda.Validar(comanda);
+            if (erro is not null)
+            {
+                return BadRequest(erro);
+            }
+
+            await context.Database.ExecuteSqlRawAsync("DELETE FROM Produtos WHERE ComandaId = {0}", comanda.Id);
+            await context.Produtos.AddRangeAsync(comanda.Produtos);
+        }
+        else
+        {
+            var erro = ValidadorComanda.Validar(comanda);
+            if (erro is not null)
+            {
+                return BadRequest(erro);
+            }
         }
 
         await context.SaveChangesAsync();

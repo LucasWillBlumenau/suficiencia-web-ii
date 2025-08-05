@@ -8,7 +8,7 @@ namespace ProvaSuficiencia.Dto.Comanda;
 public class GetComandaDto
 {
     [JsonPropertyName("idUsuario")]
-    public int IdUsuario { get; set; }
+    public required int IdUsuario { get; set; }
     [JsonPropertyName("nomeUsuario")]
     public required string NomeUsuario { get; set; }
     [JsonPropertyName("telefoneUsuario")]
@@ -22,7 +22,7 @@ public class GetComandaDto
     public class Produto
     {
         [JsonPropertyName("id")]
-        public int Id { get; set; }
+        public required int Id { get; set; }
         [JsonPropertyName("nome")]
         public required string Nome { get; set; }
         [JsonPropertyName("preco")]
