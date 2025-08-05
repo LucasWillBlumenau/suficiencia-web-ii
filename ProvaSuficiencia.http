@@ -1,0 +1,6 @@
+@ProvaSuficiencia_HostAddress = http://localhost:5193
+
+GET {{ProvaSuficiencia_HostAddress}}/ping/
+Accept: application/json
+
+###
