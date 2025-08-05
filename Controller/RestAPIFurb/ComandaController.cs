@@ -1,6 +1,8 @@
 using System.Net;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using ProvaSuficiencia.Context;
 using ProvaSuficiencia.Domain.Comanda;
 using ProvaSuficiencia.Dto.Comanda;
@@ -98,17 +100,35 @@ public class ComandaController(AppDbContext context) : ControllerBase
         comanda.TelefoneUsuario = putComandaDto.TelefoneUsuario ?? comanda.TelefoneUsuario;
         if (putComandaDto.Produtos is not null)
         {
-            comanda.Produtos = [.. putComandaDto.Produtos.Select(p => new Produto
+            await context.Database.ExecuteSqlRawAsync("DELETE FROM Produtos WHERE ComandaId = {0}", comanda.Id);
+            await context.Produtos.AddRangeAsync(putComandaDto.Produtos.Select(p => new Produto
             {
                 Id = p.Id,
                 Nome = p.Nome,
                 Preco = p.Preco,
-            })];
+                Comanda = comanda,
+            }));
         }
 
         await context.SaveChangesAsync();
 
         return NoContent();
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteComanda(int id)
+    {
+        var comanda = await context.Comandas.Include(c => c.Produtos)
+                                            .FirstOrDefaultAsync(c => c.Id == id);
+        if (comanda is null)
+        {
+            return NotFound();
+        }
+
+        context.Comandas.Remove(comanda);
+        await context.SaveChangesAsync();
+
+        return Ok(new { success = new { text = "comanda removida" } });
     }
 
 }
