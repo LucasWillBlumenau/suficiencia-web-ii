@@ -2,3 +2,5 @@ appsettings*.json
 bin
 obj
 Properties
+.env
+*.db
