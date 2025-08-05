@@ -1,4 +1,5 @@
 using System.Net;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ProvaSuficiencia.Context;
 using ProvaSuficiencia.Domain.Comanda;
@@ -8,6 +9,7 @@ namespace ProvaSuficiencia.Controller.RestAPIFurb;
 
 
 [ApiController]
+[Authorize]
 [Route("RestAPIFurb/comandas")]
 public class ComandaController(AppDbContext context) : ControllerBase
 {
